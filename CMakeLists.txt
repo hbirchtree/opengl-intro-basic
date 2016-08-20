@@ -9,3 +9,8 @@ target_link_libraries( ${PROJECT_NAME} -ldl )
 find_package ( SDL2 REQUIRED )
 include_directories( ${SDL2_INCLUDE_DIR}  )
 target_link_libraries( ${PROJECT_NAME} "${SDL2_LIBRARIES} -lm" )
+
+add_custom_command (
+    TARGET ${PROJECT_NAME}
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/texture.tga ${CMAKE_CURRENT_BINARY_DIR}/texture.tga
+    )

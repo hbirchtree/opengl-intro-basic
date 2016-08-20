@@ -3,52 +3,57 @@
 
 #include <glad/glad.h>
 
+#include "tga_read.h"
+
 static const char* shader_ver_string = {
     "#version 330 core\n"
 };
 
 static const char* shader_vertex_string = {
     "layout(location = 0) in vec3 pos;\n"
-//    "out gl_PerVertex {\n"
-//    "   vec4 gl_Position;\n"
-//    "}\n"
+    "layout(location = 1) in vec2 tex;\n"
+
     "flat out int instance_id;\n"
+    "out vec2 tex_c;"
+
     "void main(void) {\n"
     "    instance_id = gl_InstanceID;\n"
-    "    gl_Position = vec4(pos+vec3(float(gl_InstanceID)/10.),1.);\n"
+    "    tex_c = tex;\n"
+    "    gl_Position = vec4(pos,1.);\n"
     "}\n"
 };
 
 static const char* shader_fragment_string = {
     "out vec4 g_Color;\n"
+
+    "uniform sampler2D tex_s;\n"
+
     "flat in int instance_id;\n"
+    "in vec2 tex_c;\n"
+
     "void main(void){\n"
-    "    g_Color = gl_FragCoord / 3.;\n"
-    "    g_Color.a = 1.;\n"
-//    "    if(instance_id < 10)"
-//    "        g_Color = vec4((float(instance_id)+1)*0.1,0.,0.,1.);\n"
-//    "    else if(instance_id == 10)"
-//    "        g_Color = vec4(0.,(float(instance_id-10)+1)*0.1,0.,1.);\n"
-//    "    else"
-//    "        g_Color = vec4(1.);"
+    "    g_Color = texture(tex_s,tex_c);\n"
     "}\n"
 };
 
-static const GLfloat vertex_data_store[3*6] = {
-    -1.f, -1.f,  0.f,
-     1.f, -1.f,  0.f,
-    -1.f,  1.f,  0.f,
+static const GLfloat vertex_data_store[5*6] = {
+    -1.f, -1.f,  0.f,     0.f,  0.f,
+     1.f, -1.f,  0.f,    -1.f,  0.f,
+    -1.f,  1.f,  0.f,     0.f, -1.f,
 
-    -1.f,  1.f,  0.f,
-     1.f,  1.f,  0.f,
-     1.f, -1.f,  0.f,
+    -1.f,  1.f,  0.f,     0.f, -1.f,
+     1.f,  1.f,  0.f,    -1.f, -1.f,
+     1.f, -1.f,  0.f,    -1.f,  0.f,
 };
 
-void gl_error()
+void gl_error(void)
 {
     int code = 0;
     if((code = glGetError()) != 0)
-        printf("GL error code: %i\n",code);
+    {
+        fprintf(stdout,"GL error code: %i\n",code);
+        fflush(stdout);
+    }
 }
 
 int main(void)
@@ -92,10 +97,16 @@ int main(void)
     gladLoadGL();
 
     {
+        tga_data* tex_data = get_texture_data("texture.tga");
+
+        if(!tex_data || tex_data->header->typecode != 2)
+            return 1;
+
         GLuint program;
         GLuint shaders[2];
         GLuint buffers[1];
         GLuint arrays[1];
+        GLuint textures[1];
 
         const char* shader_vertex_arr[] = {
             shader_ver_string,
@@ -109,6 +120,7 @@ int main(void)
 
         glGenBuffers(1,buffers);
         glGenVertexArrays(1,arrays);
+        glGenTextures(1,textures);
 
         glBindVertexArray(arrays[0]);
         glBindBuffer(GL_ARRAY_BUFFER,buffers[0]);
@@ -117,7 +129,9 @@ int main(void)
         gl_error();
 
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(GLfloat)*3,(const GLvoid*)0x0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(GLfloat)*5,(const GLvoid*)0x0);
+        glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,sizeof(GLfloat)*5,(const GLvoid*)(sizeof(GLfloat)*3));
 
         shaders[0] = glCreateShader(GL_VERTEX_SHADER);
         shaders[1] = glCreateShader(GL_FRAGMENT_SHADER);
@@ -140,18 +154,36 @@ int main(void)
         glDetachShader(program,shaders[0]);
         glDetachShader(program,shaders[1]);
 
+        glDeleteShader(shaders[0]);
+        glDeleteShader(shaders[1]);
+
+        glBindTexture(GL_TEXTURE_2D,textures[0]);
+
+        glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA8,
+                     tex_data->header->width,tex_data->header->height,
+                     0,
+                     GL_RGB,GL_UNSIGNED_BYTE,tex_data->img_data);
+
+        free_texture_data(tex_data);
+
+        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_BASE_LEVEL,0);
+        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAX_LEVEL,0);
+
+        glActiveTexture(GL_TEXTURE0 + 0);
+
         glUseProgram(program);
         gl_error();
 
-        glDeleteShader(shaders[0]);
-        glDeleteShader(shaders[1]);
+        GLuint tex_loc = glGetUniformLocation(program,"tex_s");
 
         glClearColor(0.5,0.5,0.5,1.0);
         while(!closing)
         {
             glClear(GL_COLOR_BUFFER_BIT);
 
-            glDrawArraysInstanced(GL_TRIANGLES,0,6,20);
+            glUniform1i(tex_loc,0);
+
+            glDrawArraysInstanced(GL_TRIANGLES,0,6,1);
 
             /* Check for events */
             while(SDL_PollEvent(&ev))
