@@ -12,15 +12,18 @@ static const char* shader_vertex_string = {
 //    "out gl_PerVertex {\n"
 //    "   vec4 gl_Position;\n"
 //    "}\n"
+    "flat out int instance_id;\n"
     "void main(void) {\n"
-    "    gl_Position = vec4(pos,1.);\n"
+    "    instance_id = gl_InstanceID;\n"
+    "    gl_Position = vec4(pos+vec3(float(gl_InstanceID)/10.),1.);\n"
     "}\n"
 };
 
 static const char* shader_fragment_string = {
     "out vec4 g_Color;\n"
+    "flat in int instance_id;\n"
     "void main(void){\n"
-    "    g_Color = vec4(1.,0.,0.,1.);\n"
+    "    g_Color = vec4((float(instance_id)+1)*0.1,0.,0.,1.);\n"
     "}\n"
 };
 
@@ -140,7 +143,7 @@ int main(void)
         {
             glClear(GL_COLOR_BUFFER_BIT);
 
-            glDrawArrays(GL_TRIANGLES,0,6);
+            glDrawArraysInstanced(GL_TRIANGLES,0,6,6);
 
             /* Check for events */
             while(SDL_PollEvent(&ev))
@@ -166,6 +169,9 @@ int main(void)
 
         glDeleteVertexArrays(1,arrays);
         glDeleteBuffers(1,buffers);
+        glDeleteProgram(program);
+
+        gl_error();
     }
 
     SDL_GL_MakeCurrent(win,0x0);
