@@ -23,7 +23,14 @@ static const char* shader_fragment_string = {
     "out vec4 g_Color;\n"
     "flat in int instance_id;\n"
     "void main(void){\n"
-    "    g_Color = vec4((float(instance_id)+1)*0.1,0.,0.,1.);\n"
+    "    g_Color = gl_FragCoord / 3.;\n"
+    "    g_Color.a = 1.;\n"
+//    "    if(instance_id < 10)"
+//    "        g_Color = vec4((float(instance_id)+1)*0.1,0.,0.,1.);\n"
+//    "    else if(instance_id == 10)"
+//    "        g_Color = vec4(0.,(float(instance_id-10)+1)*0.1,0.,1.);\n"
+//    "    else"
+//    "        g_Color = vec4(1.);"
     "}\n"
 };
 
@@ -67,10 +74,11 @@ int main(void)
         return 1;
     }
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_DEBUG_FLAG,1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS,SDL_GL_CONTEXT_DEBUG_FLAG);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,SDL_GL_CONTEXT_PROFILE_CORE);
 
     SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL,1);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,1);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,0);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_CORE,1);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,3);
@@ -143,7 +151,7 @@ int main(void)
         {
             glClear(GL_COLOR_BUFFER_BIT);
 
-            glDrawArraysInstanced(GL_TRIANGLES,0,6,6);
+            glDrawArraysInstanced(GL_TRIANGLES,0,6,20);
 
             /* Check for events */
             while(SDL_PollEvent(&ev))
