@@ -31,7 +31,7 @@ tga_data* get_texture_data(const char* texfile)
     if(!rw)
         return 0x0;
 
-    tga_data* tga = malloc(sizeof(tga_data));
+    tga_data* tga = new tga_data;
 
     tga->size = SDL_RWsize(rw);
     tga->file_data = malloc(tga->size);

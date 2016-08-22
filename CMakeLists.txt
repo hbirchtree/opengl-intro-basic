@@ -1,9 +1,11 @@
 project(GL_Basics)
 cmake_minimum_required(VERSION 2.8)
-aux_source_directory(. SRC_LIST)
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/include )
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/modules/glm
+    )
 
-add_executable( ${PROJECT_NAME} ${SRC_LIST} )
+add_executable( ${PROJECT_NAME} main.cpp glad.c )
 target_link_libraries( ${PROJECT_NAME} -ldl )
 
 find_package ( SDL2 REQUIRED )
