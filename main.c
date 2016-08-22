@@ -13,8 +13,6 @@ static const char* shader_vertex_string = {
     "layout(location = 0) in vec3 pos;\n"
     "layout(location = 1) in vec2 tex;\n"
 
-    "uniform mat4 mat_f;\n"
-
     "flat out int instance_id;\n"
     "out vec2 tex_c;"
 
@@ -177,7 +175,6 @@ int main(void)
         gl_error();
 
         GLuint tex_loc = glGetUniformLocation(program,"tex_s");
-        GLuint mat_loc = glGetUniformLocation(program,"mat_f");
 
         glClearColor(0.5,0.5,0.5,1.0);
         while(!closing)
