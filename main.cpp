@@ -182,6 +182,7 @@ int main(void)
         GLuint tex_loc = glGetUniformLocation(program,"tex_s");
         GLuint mat_loc = glGetUniformLocation(program,"mat_f");
 
+        glm::mat4 mat_perspective = glm::perspective(90.f,1.7f,1.0f,10.0f);
         glm::mat4 mat_data[1] = {};
 
         mat_data[0] = glm::translate(glm::mat4(),glm::vec3(0));
@@ -199,7 +200,7 @@ int main(void)
             variable_time = float(SDL_GetTicks())/1000.0;
             scale_num = float(SDL_GetTicks() % 1000 + 50) / 1000;
 
-            mat_data[0] = glm::translate(glm::mat4(),glm::vec3(sin(variable_time),cos(variable_time),0));
+            mat_data[0] = mat_perspective * glm::translate(glm::mat4(),glm::vec3(sin(variable_time),cos(variable_time),0));
             mat_data[0] = glm::scale(mat_data[0],glm::vec3(scale_num));
 
             glUniform1i(tex_loc,0);
