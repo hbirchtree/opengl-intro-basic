@@ -56,6 +56,14 @@ void gl_error(void)
     }
 }
 
+typedef struct rgba_t
+{
+    char r;
+    char g;
+    char b;
+    char a;
+} rgba;
+
 int main(void)
 {
     int closing = 0;
@@ -92,19 +100,16 @@ int main(void)
 
     SDL_GL_MakeCurrent(win,glctxt);
 
+    SDL_GL_SetSwapInterval(0);
+
     gladLoadGL();
 
     {
-        tga_data* tex_data = get_texture_data("texture.tga");
-
-        if(!tex_data || tex_data->header->typecode != 2)
-            return 1;
-
         GLuint program;
         GLuint shaders[2];
-        GLuint buffers[1];
+        GLuint buffers[3];
         GLuint arrays[1];
-        GLuint textures[1];
+        GLuint textures[2];
 
         const char* shader_vertex_arr[] = {
             shader_ver_string,
@@ -116,9 +121,9 @@ int main(void)
             shader_fragment_string
         };
 
-        glGenBuffers(1,buffers);
+        glGenBuffers(3,buffers);
         glGenVertexArrays(1,arrays);
-        glGenTextures(1,textures);
+        glGenTextures(2,textures);
 
         glBindVertexArray(arrays[0]);
         glBindBuffer(GL_ARRAY_BUFFER,buffers[0]);
@@ -156,16 +161,39 @@ int main(void)
         glDeleteShader(shaders[1]);
 
         glBindTexture(GL_TEXTURE_2D,textures[0]);
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER,buffers[1]);
 
+        size_t pixel_buf_size = 512*512*sizeof(rgba);
+        rgba* pixel_data = malloc(pixel_buf_size);
+
+        rgba* curr = 0x0;
+        int i,j;
+        for(i=0;i<512;i++)
+            for(j=0;j<512;j++)
+            {
+                curr = &pixel_data[i*512 + j];
+                curr->r = curr->a = 255;
+            }
+
+        glBufferData(GL_PIXEL_UNPACK_BUFFER,pixel_buf_size,pixel_data,GL_STATIC_DRAW);
         glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA8,
-                     tex_data->header->width,tex_data->header->height,
+                     512,512,
                      0,
-                     GL_RGB,GL_UNSIGNED_BYTE,tex_data->img_data);
-
-        free_texture_data(tex_data);
+                     GL_RGBA,GL_UNSIGNED_BYTE,0x0);
 
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_BASE_LEVEL,0);
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAX_LEVEL,0);
+
+        glBindTexture(GL_TEXTURE_2D,textures[1]);
+        glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA8,
+                     512,512,
+                     0,
+                     GL_RGBA,GL_UNSIGNED_BYTE,0x0);
+
+        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_BASE_LEVEL,0);
+        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAX_LEVEL,0);
+
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER,0);
 
         glActiveTexture(GL_TEXTURE0 + 0);
 
@@ -174,14 +202,49 @@ int main(void)
 
         GLuint tex_loc = glGetUniformLocation(program,"tex_s");
 
+        unsigned int pbo_idx = 0;
+
         glClearColor(0.5,0.5,0.5,1.0);
+        unsigned long frame_timer = SDL_GetTicks() + 1000;
+        unsigned long frame_tick = 0;
         while(!closing)
         {
             glClear(GL_COLOR_BUFFER_BIT);
 
+            unsigned char pixel_val = SDL_GetTicks()/10 % 255;
+
+            for(i=0;i<512;i++)
+                for(j=0;j<512;j++)
+                {
+                    pixel_data[i*512 + j].r = pixel_val;
+                }
+
+//            glBindBuffer(GL_PIXEL_UNPACK_BUFFER,buffers[1 + pbo_idx]);
+//            glBufferData(GL_PIXEL_UNPACK_BUFFER,pixel_buf_size,pixel_data,GL_STATIC_DRAW);
+
+//            glBindTexture(GL_TEXTURE_2D,textures[pbo_idx]);
+            glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA8,
+                         512,512,
+                         0,
+                         GL_RGBA,GL_UNSIGNED_BYTE,pixel_data);
+
+//            pbo_idx++;
+//            pbo_idx = pbo_idx % 2;
+
+//            glBindTexture(GL_TEXTURE_2D,textures[pbo_idx]);
+
             glUniform1i(tex_loc,0);
 
             glDrawArraysInstanced(GL_TRIANGLES,0,6,1);
+
+            if(SDL_GetTicks() >= frame_timer)
+            {
+                frame_timer = SDL_GetTicks() + 1000;
+                fprintf(stdout,"FPS: %lu\n",frame_tick);
+                fflush(stdout);
+                frame_tick = 0;
+            }
+            frame_tick++;
 
             /* Check for events */
             while(SDL_PollEvent(&ev))
