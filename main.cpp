@@ -77,6 +77,22 @@ int main(void)
         return 1;
     }
 
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,SDL_GL_CONTEXT_PROFILE_CORE);
+
+    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL,SDL_TRUE);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,SDL_TRUE);
+
+    SDL_GL_SetAttribute(SDL_GL_RED_SIZE,8);
+    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,8);
+    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,8);
+    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE,8);
+
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,3);
+
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,24);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE,8);
+
     SDL_GLContext glctxt = SDL_GL_CreateContext(win);
 
     if(!glctxt)
@@ -84,18 +100,6 @@ int main(void)
         printf("Failed to obtain GL context from window: %s\n",SDL_GetError());
         return 1;
     }
-
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS,SDL_GL_CONTEXT_DEBUG_FLAG);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,SDL_GL_CONTEXT_PROFILE_CORE);
-
-    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL,1);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,0);
-
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,3);
-
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,24);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE,8);
 
     SDL_GL_MakeCurrent(win,glctxt);
 
@@ -137,6 +141,8 @@ int main(void)
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(GLfloat)*5,(const GLvoid*)0x0);
         glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,sizeof(GLfloat)*5,(const GLvoid*)(sizeof(GLfloat)*3));
+
+        glBindBuffer(GL_ARRAY_BUFFER,buffers[0]);
 
         shaders[0] = glCreateShader(GL_VERTEX_SHADER);
         shaders[1] = glCreateShader(GL_FRAGMENT_SHADER);
@@ -182,11 +188,8 @@ int main(void)
         GLuint tex_loc = glGetUniformLocation(program,"tex_s");
         GLuint mat_loc = glGetUniformLocation(program,"mat_f");
 
-        glm::mat4 mat_perspective = glm::perspective(90.f,1.7f,1.0f,10.0f);
+        glm::mat4 mat_perspective = glm::perspective(90.f,1.3f,1.0f,10.0f);
         glm::mat4 mat_data[1] = {};
-
-        mat_data[0] = glm::translate(glm::mat4(),glm::vec3(0));
-        mat_data[0] = glm::scale(mat_data[0],glm::vec3(0.6));
 
         glClearColor(0.5,0.5,0.5,1.0);
 
@@ -200,7 +203,7 @@ int main(void)
             variable_time = float(SDL_GetTicks())/1000.0;
             scale_num = float(SDL_GetTicks() % 1000 + 50) / 1000;
 
-            mat_data[0] = mat_perspective * glm::translate(glm::mat4(),glm::vec3(sin(variable_time),cos(variable_time),0));
+            mat_data[0] = mat_perspective * glm::translate(glm::mat4(),glm::vec3(sin(variable_time),cos(variable_time),-3));
             mat_data[0] = glm::scale(mat_data[0],glm::vec3(scale_num));
 
             glUniform1i(tex_loc,0);
