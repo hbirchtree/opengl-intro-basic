@@ -9,10 +9,9 @@ static const char* shader_ver_string = {
 
 static const char* shader_vertex_string = {
     "layout(location = 0) in vec3 pos;\n"
-//    "out gl_PerVertex {\n"
-//    "   vec4 gl_Position;\n"
-//    "}\n"
+
     "flat out int instance_id;\n"
+
     "void main(void) {\n"
     "    instance_id = gl_InstanceID;\n"
     "    gl_Position = vec4(pos+vec3(float(gl_InstanceID)/10.),1.);\n"
@@ -21,16 +20,12 @@ static const char* shader_vertex_string = {
 
 static const char* shader_fragment_string = {
     "out vec4 g_Color;\n"
+
     "flat in int instance_id;\n"
+
     "void main(void){\n"
     "    g_Color = gl_FragCoord / 3.;\n"
     "    g_Color.a = 1.;\n"
-//    "    if(instance_id < 10)"
-//    "        g_Color = vec4((float(instance_id)+1)*0.1,0.,0.,1.);\n"
-//    "    else if(instance_id == 10)"
-//    "        g_Color = vec4(0.,(float(instance_id-10)+1)*0.1,0.,1.);\n"
-//    "    else"
-//    "        g_Color = vec4(1.);"
     "}\n"
 };
 
