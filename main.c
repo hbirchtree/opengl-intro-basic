@@ -143,7 +143,7 @@ int main(void)
         {
             glClear(GL_COLOR_BUFFER_BIT);
 
-            glDrawArraysInstanced(GL_TRIANGLES,0,6,6);
+            glDrawArraysInstanced(GL_TRIANGLES,0,6,10);
 
             /* Check for events */
             while(SDL_PollEvent(&ev))
