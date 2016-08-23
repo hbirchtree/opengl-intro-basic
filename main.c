@@ -24,7 +24,7 @@ static const char* shader_fragment_string = {
     "flat in int instance_id;\n"
 
     "void main(void){\n"
-    "    g_Color = gl_FragCoord / 3.;\n"
+    "    g_Color = gl_FragCoord / 500.;\n"
     "    g_Color.a = 1.;\n"
     "}\n"
 };
@@ -144,7 +144,7 @@ int main(void)
         {
             glClear(GL_COLOR_BUFFER_BIT);
 
-            glDrawArraysInstanced(GL_TRIANGLES,0,6,20);
+            glDrawArrays(GL_TRIANGLES,0,6);
 
             /* Check for events */
             while(SDL_PollEvent(&ev))
