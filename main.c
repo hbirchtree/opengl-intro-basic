@@ -128,6 +128,9 @@ int main(void)
         glDetachShader(program,shaders[0]);
         glDetachShader(program,shaders[1]);
 
+        glDeleteShader(shaders[0]);
+        glDeleteShader(shaders[1]);
+
         glUseProgram(program);
         gl_error();
 
