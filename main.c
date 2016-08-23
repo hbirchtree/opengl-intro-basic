@@ -9,10 +9,9 @@ static const char* shader_ver_string = {
 
 static const char* shader_vertex_string = {
     "layout(location = 0) in vec3 pos;\n"
-//    "out gl_PerVertex {\n"
-//    "   vec4 gl_Position;\n"
-//    "}\n"
+
     "flat out int instance_id;\n"
+
     "void main(void) {\n"
     "    instance_id = gl_InstanceID;\n"
     "    gl_Position = vec4(pos+vec3(float(gl_InstanceID)/10.),1.);\n"
@@ -21,7 +20,9 @@ static const char* shader_vertex_string = {
 
 static const char* shader_fragment_string = {
     "out vec4 g_Color;\n"
+
     "flat in int instance_id;\n"
+
     "void main(void){\n"
     "    g_Color = vec4((float(instance_id)+1)*0.1,0.,0.,1.);\n"
     "}\n"
@@ -59,14 +60,13 @@ int main(void)
         return 1;
     }
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_DEBUG_FLAG,1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,SDL_GL_CONTEXT_PROFILE_CORE);
 
-    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL,1);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,1);
+    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL,SDL_TRUE);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,SDL_TRUE);
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_CORE,1);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,3);
 
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE,8);
@@ -78,7 +78,6 @@ int main(void)
         printf("Failed to obtain GL context from window: %s\n",SDL_GetError());
         return 1;
     }
-
 
     SDL_GL_MakeCurrent(win,glctxt);
 
