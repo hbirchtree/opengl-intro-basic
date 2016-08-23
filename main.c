@@ -168,6 +168,9 @@ int main(void)
 
         glDeleteVertexArrays(1,arrays);
         glDeleteBuffers(1,buffers);
+        glDeleteProgram(program);
+
+        gl_error();
     }
 
     SDL_GL_MakeCurrent(win,0x0);
