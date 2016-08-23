@@ -17,15 +17,13 @@ static const char* shader_vertex_string = {
     "layout(location = 0) in vec3 pos;\n"
     "layout(location = 1) in vec2 tex;\n"
 
-    "uniform mat4 mat_f;\n"
-
     "flat out int instance_id;\n"
     "out vec2 tex_c;"
 
     "void main(void) {\n"
     "    instance_id = gl_InstanceID;\n"
     "    tex_c = tex;\n"
-    "    gl_Position = mat_f * vec4(pos,1.);\n"
+    "    gl_Position = vec4(pos,1.);\n"
     "}\n"
 };
 
@@ -179,30 +177,13 @@ int main(void)
         gl_error();
 
         GLuint tex_loc = glGetUniformLocation(program,"tex_s");
-        GLuint mat_loc = glGetUniformLocation(program,"mat_f");
-
-        glm::mat4 mat_data[1] = {};
-
-        mat_data[0] = glm::translate(glm::mat4(),glm::vec3(0));
-        mat_data[0] = glm::scale(mat_data[0],glm::vec3(0.6));
 
         glClearColor(0.5,0.5,0.5,1.0);
-
-        float scale_num = 0.5;
-        float variable_time = 0.0;
-
         while(!closing)
         {
             glClear(GL_COLOR_BUFFER_BIT);
 
-            variable_time = float(SDL_GetTicks())/1000.0;
-            scale_num = float(SDL_GetTicks() % 1000 + 50) / 1000;
-
-            mat_data[0] = glm::translate(glm::mat4(),glm::vec3(sin(variable_time),cos(variable_time),0));
-            mat_data[0] = glm::scale(mat_data[0],glm::vec3(scale_num));
-
             glUniform1i(tex_loc,0);
-            glUniformMatrix4fv(mat_loc,1,GL_FALSE,glm::value_ptr(mat_data[0]));
 
             glDrawArraysInstanced(GL_TRIANGLES,0,6,1);
 
