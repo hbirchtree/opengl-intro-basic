@@ -66,14 +66,6 @@ int main(void)
         return 1;
     }
 
-    SDL_GLContext glctxt = SDL_GL_CreateContext(win);
-
-    if(!glctxt)
-    {
-        printf("Failed to obtain GL context from window: %s\n",SDL_GetError());
-        return 1;
-    }
-
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS,SDL_GL_CONTEXT_DEBUG_FLAG);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,SDL_GL_CONTEXT_PROFILE_CORE);
 
@@ -86,6 +78,14 @@ int main(void)
 
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE,8);
+
+    SDL_GLContext glctxt = SDL_GL_CreateContext(win);
+
+    if(!glctxt)
+    {
+        printf("Failed to obtain GL context from window: %s\n",SDL_GetError());
+        return 1;
+    }
 
     SDL_GL_MakeCurrent(win,glctxt);
 
