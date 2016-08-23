@@ -138,9 +138,6 @@ int main(void)
         glUseProgram(program);
         gl_error();
 
-        glDeleteShader(shaders[0]);
-        glDeleteShader(shaders[1]);
-
         glClearColor(0.5,0.5,0.5,1.0);
         while(!closing)
         {
