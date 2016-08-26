@@ -13,6 +13,8 @@ static const char* shader_vertex_string = {
     "layout(location = 0) in vec3 pos;\n"
     "layout(location = 1) in vec2 tex;\n"
 
+    "out float gl_ClipDistance[1];"
+
     "flat out int instance_id;\n"
     "out vec2 tex_c;"
 
@@ -20,6 +22,8 @@ static const char* shader_vertex_string = {
     "    instance_id = gl_InstanceID;\n"
     "    tex_c = tex;\n"
     "    gl_Position = vec4(pos,1.);\n"
+    "    const float instOffsetScale[2] = float[](-.5,.5);\n"
+    "    gl_ClipDistance[0] = dot(gl_Position,vec4(instOffsetScale[gl_InstanceID&1],0.,0.,0.));"
     "}\n"
 };
 
@@ -63,7 +67,7 @@ int main(void)
 
     SDL_Init(SDL_INIT_VIDEO|SDL_INIT_EVENTS);
 
-    SDL_Window* win = SDL_CreateWindow("Hello GL3.3",0,0,800,600,SDL_WINDOW_SHOWN|SDL_WINDOW_OPENGL);
+    SDL_Window* win = SDL_CreateWindow("Hello GL3.3",0,0,1024,600,SDL_WINDOW_SHOWN|SDL_WINDOW_OPENGL);
 
     if(!win)
     {
@@ -174,6 +178,8 @@ int main(void)
 
         GLuint tex_loc = glGetUniformLocation(program,"tex_s");
 
+        glEnable(GL_CLIP_DISTANCE0);
+
         glClearColor(0.5,0.5,0.5,1.0);
         while(!closing)
         {
@@ -181,7 +187,7 @@ int main(void)
 
             glUniform1i(tex_loc,0);
 
-            glDrawArraysInstanced(GL_TRIANGLES,0,6,1);
+            glDrawArraysInstanced(GL_TRIANGLES,0,6,2);
 
             /* Check for events */
             while(SDL_PollEvent(&ev))
