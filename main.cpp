@@ -15,41 +15,52 @@ static const char* shader_ver_string = {
 
 static const char* shader_vertex_string = {
     "layout(location = 0) in vec3 pos;\n"
-    "layout(location = 1) in vec2 tex;\n"
 
     "uniform mat4 mat_f;\n"
 
     "flat out int instance_id;\n"
-    "out vec2 tex_c;"
+    "out vec3 col;\n"
 
     "void main(void) {\n"
     "    instance_id = gl_InstanceID;\n"
-    "    tex_c = tex;\n"
+    "    col = pos;\n"
     "    gl_Position = mat_f * vec4(pos,1.);\n"
     "}\n"
 };
 
 static const char* shader_fragment_string = {
     "out vec4 g_Color;\n"
-
-    "uniform sampler2D tex_s;\n"
-
     "flat in int instance_id;\n"
-    "in vec2 tex_c;\n"
-
+    "in vec3 col;\n"
     "void main(void){\n"
-    "    g_Color = texture(tex_s,tex_c);\n"
+    "    g_Color = vec4(col,1.);\n"
     "}\n"
 };
 
-static const GLfloat vertex_data_store[5*6] = {
-    -1.f, -1.f,  0.f,     0.f,  0.f,
-     1.f, -1.f,  0.f,    -1.f,  0.f,
-    -1.f,  1.f,  0.f,     0.f, -1.f,
+static const GLfloat vertex_data_store[3*8] = {
+     1.000000,-1.000000,-1.000000,
+     1.000000,-1.000000, 1.000000,
+    -1.000000,-1.000000, 1.000000,
+    -1.000000,-1.000000,-1.000000,
+     1.000000, 1.000000,-1.000000,
+     1.000000, 1.000000, 1.000000,
+    -1.000000, 1.000000, 1.000000,
+    -1.000000, 1.000000,-1.000000,
+};
 
-    -1.f,  1.f,  0.f,     0.f, -1.f,
-     1.f,  1.f,  0.f,    -1.f, -1.f,
-     1.f, -1.f,  0.f,    -1.f,  0.f,
+static const GLchar index_data_store[12*3] = {
+    2,3,4,
+    8,7,6,
+    5,6,2,
+    6,7,3,
+    3,7,8,
+    1,4,8,
+    1,2,4,
+    5,8,6,
+    1,5,2,
+    2,6,3,
+    4,3,8,
+    5,1,8,
 };
 
 void gl_error(void)
@@ -108,7 +119,7 @@ int main(void)
 
         GLuint program;
         GLuint shaders[2];
-        GLuint buffers[1];
+        GLuint buffers[2];
         GLuint arrays[1];
         GLuint textures[1];
 
@@ -122,20 +133,20 @@ int main(void)
             shader_fragment_string
         };
 
-        glGenBuffers(1,buffers);
+        glGenBuffers(2,buffers);
         glGenVertexArrays(1,arrays);
         glGenTextures(1,textures);
 
         glBindVertexArray(arrays[0]);
         glBindBuffer(GL_ARRAY_BUFFER,buffers[0]);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,buffers[1]);
 
         glBufferData(GL_ARRAY_BUFFER,sizeof(vertex_data_store),vertex_data_store,GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(index_data_store),index_data_store,GL_STATIC_DRAW);
         gl_error();
 
         glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(GLfloat)*5,(const GLvoid*)0x0);
-        glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,sizeof(GLfloat)*5,(const GLvoid*)(sizeof(GLfloat)*3));
+        glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(GLfloat)*3,(const GLvoid*)0x0);
 
         glBindBuffer(GL_ARRAY_BUFFER,buffers[0]);
 
@@ -191,9 +202,13 @@ int main(void)
         float scale_num = 0.5;
         float variable_time = 0.0;
 
+        printf("Sizeof index array: %lu\n",sizeof(index_data_store));
+
+        glEnable(GL_DEPTH_TEST);
+
         while(!closing)
         {
-            glClear(GL_COLOR_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
             variable_time = float(SDL_GetTicks())/1000.0;
             scale_num = float(SDL_GetTicks() % 1000 + 50) / 1000;
@@ -204,7 +219,9 @@ int main(void)
             glUniform1i(tex_loc,0);
             glUniformMatrix4fv(mat_loc,1,GL_FALSE,glm::value_ptr(mat_data[0]));
 
-            glDrawArraysInstanced(GL_TRIANGLES,0,6,1);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,buffers[1]);
+
+            glDrawElements(GL_TRIANGLES,36,GL_UNSIGNED_BYTE,0x0);
 
             /* Check for events */
             while(SDL_PollEvent(&ev))
