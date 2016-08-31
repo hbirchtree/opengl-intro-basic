@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include <glad/glad.h>
 
@@ -63,6 +63,8 @@ typedef struct rgba_t
     char b;
     char a;
 } rgba;
+
+#undef main
 
 int main(void)
 {
