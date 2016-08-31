@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include <glad/glad.h>
 
@@ -39,6 +39,8 @@ void gl_error()
     if((code = glGetError()) != 0)
         printf("GL error code: %i\n",code);
 }
+
+#undef main
 
 int main(void)
 {
