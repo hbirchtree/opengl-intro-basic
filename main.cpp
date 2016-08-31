@@ -62,6 +62,8 @@ void gl_error(void)
     }
 }
 
+#undef main
+
 int main(void)
 {
     int closing = 0;
