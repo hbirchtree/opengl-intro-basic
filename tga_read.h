@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <SDL.h>
 
 #pragma pack(1)
@@ -29,18 +30,26 @@ typedef struct tga_data_t
 
 tga_data* get_texture_data(const char* texfile)
 {
-    SDL_RWops* rw = SDL_RWFromFile(texfile,"r");
+    FILE* rw = fopen(texfile,"rb");
     if(!rw)
         return 0x0;
 
     tga_data* tga = malloc(sizeof(tga_data));
 
-    tga->size = SDL_RWsize(rw);
+	fseek(rw, 0, FILE_END);
+    tga->size = ftell(rw);
+	fseek(rw, 0, FILE_BEGIN);
     tga->file_data = malloc(tga->size);
-    SDL_RWread(rw,tga->file_data,tga->size,tga->size);
-    SDL_RWclose(rw);
+	unsigned char* data = (unsigned char*)tga->file_data;
+	size_t out = fread(tga->file_data,tga->size,1,rw);
+    fclose(rw);
+
+	fprintf(stderr,"Got bad read size: %i",out);
 
     tga->header = (tga_header*)tga->file_data;
+
+	printf("Offsets: %p, %p\n", &tga->header->idlen, &tga->header->imagedesc);
+	printf("Sizes: %i, %i\n",sizeof(char),sizeof(short int));
 
     tga->img_data = (char*)tga->file_data + sizeof(tga_header) + tga->header->idlen;
 
