@@ -119,7 +119,7 @@ int main(void)
 
         GLuint program;
         GLuint shaders[2];
-        GLuint buffers[2];
+        GLuint buffers[1];
         GLuint arrays[1];
         GLuint textures[1];
 
@@ -133,22 +133,20 @@ int main(void)
             shader_fragment_string
         };
 
-        glGenBuffers(2,buffers);
+        glGenBuffers(1,buffers);
         glGenVertexArrays(1,arrays);
         glGenTextures(1,textures);
 
         glBindVertexArray(arrays[0]);
         glBindBuffer(GL_ARRAY_BUFFER,buffers[0]);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,buffers[1]);
 
         glBufferData(GL_ARRAY_BUFFER,sizeof(vertex_data_store),vertex_data_store,GL_STATIC_DRAW);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(index_data_store),index_data_store,GL_STATIC_DRAW);
         gl_error();
 
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(GLfloat)*3,(const GLvoid*)0x0);
-
-        glBindBuffer(GL_ARRAY_BUFFER,buffers[0]);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(GLfloat)*5,(const GLvoid*)0x0);
+        glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,sizeof(GLfloat)*5,(const GLvoid*)(sizeof(GLfloat)*3));
 
         shaders[0] = glCreateShader(GL_VERTEX_SHADER);
         shaders[1] = glCreateShader(GL_FRAGMENT_SHADER);
@@ -202,13 +200,9 @@ int main(void)
         float scale_num = 0.5;
         float variable_time = 0.0;
 
-        printf("Sizeof index array: %lu\n",sizeof(index_data_store));
-
-        glEnable(GL_DEPTH_TEST);
-
         while(!closing)
         {
-            glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT);
 
             variable_time = float(SDL_GetTicks())/1000.0;
             scale_num = float(SDL_GetTicks() % 1000 + 50) / 1000;
@@ -219,9 +213,7 @@ int main(void)
             glUniform1i(tex_loc,0);
             glUniformMatrix4fv(mat_loc,1,GL_FALSE,glm::value_ptr(mat_data[0]));
 
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,buffers[1]);
-
-            glDrawElements(GL_TRIANGLES,36,GL_UNSIGNED_BYTE,0x0);
+            glDrawArraysInstanced(GL_TRIANGLES,0,6,1);
 
             /* Check for events */
             while(SDL_PollEvent(&ev))
