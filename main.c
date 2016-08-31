@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include <glad/glad.h>
 
@@ -59,6 +59,8 @@ void gl_error(void)
         fflush(stdout);
     }
 }
+
+#undef main
 
 int main(void)
 {
