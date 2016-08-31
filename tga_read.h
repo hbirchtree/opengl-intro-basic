@@ -1,7 +1,9 @@
 #include <stdlib.h>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
-typedef struct __attribute__((packed)) tga_header_t
+#pragma pack(1)
+
+typedef struct tga_header_t
 {
     char idlen;
     char maptype;
